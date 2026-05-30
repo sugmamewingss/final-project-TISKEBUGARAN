@@ -1,0 +1,113 @@
+openapi: 3.0.0
+info:
+  title: API Kebugaran (Tugas Akhir TIS)
+  description: Dokumentasi REST API untuk manajemen jadwal dan catatan latihan kebugaran. Terhubung via API Gateway.
+  version: 1.0.0
+servers:
+  - url: http://127.0.0.1:3000/api
+    description: API Gateway (Node.js)
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - bearerAuth: []
+
+paths:
+  /auth/login:
+    post:
+      summary: Login User
+      description: Mendapatkan token JWT untuk autentikasi.
+      security: [] # Endpoint ini tidak butuh token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: admin@kebugaran.com
+                password:
+                  type: string
+                  example: password123
+      responses:
+        '200':
+          description: Berhasil login dan mendapatkan token.
+        '401':
+          description: Kredensial salah.
+
+  /exercises:
+    get:
+      summary: Daftar Gerakan
+      description: Mengambil semua data master gerakan latihan. (Bisa diakses Admin & Member).
+      responses:
+        '200':
+          description: Sukses mengambil data.
+        '401':
+          description: Token tidak valid atau belum login.
+          
+    post:
+      summary: Tambah Gerakan Baru (Khusus Admin)
+      description: Menambahkan data gerakan ke database. Membutuhkan hak akses Role Admin.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: Push Up
+                category:
+                  type: string
+                  example: Chest
+                description:
+                  type: string
+                  example: Latihan beban tubuh bagian atas.
+      responses:
+        '201':
+          description: Data berhasil ditambahkan.
+        '403':
+          description: Akses ditolak (Bukan Admin).
+
+  /workouts:
+    post:
+      summary: Catat Sesi Latihan (Khusus Member)
+      description: Mencatat log latihan dan memanggil API Wger untuk mendapatkan rekomendasi gerakan selanjutnya. Membutuhkan hak akses Role Member.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                exercise_id:
+                  type: integer
+                  example: 1
+                date:
+                  type: string
+                  format: date
+                  example: "2026-05-31"
+                sets:
+                  type: integer
+                  example: 3
+                reps:
+                  type: integer
+                  example: 12
+                weight_kg:
+                  type: number
+                  example: 20
+      responses:
+        '201':
+          description: Log berhasil disimpan dan rekomendasi API pihak ketiga didapatkan.
+        '422':
+          description: Validasi input gagal.
+        '403':
+          description: Akses ditolak (Bukan Member).
