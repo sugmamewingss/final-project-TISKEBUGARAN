@@ -19,13 +19,19 @@ class ExerciseController extends Controller
     // Khusus Admin
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string',
             'category' => 'required|string',
-            'description' => 'nullable|string'
+            'description' => 'nullable|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048', // max 2MB
         ]);
 
-        $exercise = Exercise::create($request->all());
+        // Simpan file gambar (jika ada) ke storage/app/public/exercises
+        if ($request->hasFile('image')) {
+            $validated['image'] = $request->file('image')->store('exercises', 'public');
+        }
+
+        $exercise = Exercise::create($validated);
 
         return response()->json([
             'status' => 'success',

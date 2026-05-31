@@ -28,7 +28,7 @@ async function login() {
         // Jika sukses, simpan token JWT ke Local Storage
         const token = response.data.data.authorization.token;
         localStorage.setItem('jwt_token', token);
-        
+
         errorMsg.innerText = "";
         showDashboard();
         fetchProfile(token);
@@ -45,6 +45,10 @@ async function fetchProfile(token) {
         });
         // Tampilkan nama user di layar
         document.getElementById('user-name').innerText = response.data.data.name;
+
+        // [TAMBAHAN FITUR ADMIN] Tampilkan panel admin bila role === 'admin'.
+        // Fungsi handleAdminUI didefinisikan di admin.js (file terpisah, additive).
+        if (typeof handleAdminUI === 'function') handleAdminUI(response.data.data);
     } catch (error) {
         console.error("Token mungkin kadaluarsa", error);
         logout(); // Tendang user jika token tidak valid
@@ -61,11 +65,16 @@ async function fetchExercises() {
         const response = await axios.get(`${API_URL}/exercises`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
-        
+
         list.innerHTML = '';
         response.data.data.forEach(ex => {
             const li = document.createElement('li');
-            li.innerHTML = `<strong>${ex.name}</strong> - <small>${ex.category}</small>`;
+            // [TAMBAHAN] Tampilkan thumbnail gambar bila tersedia (image_url dari backend).
+            // Jika tidak ada gambar, tampilan tetap sama seperti sebelumnya.
+            const thumb = ex.image_url
+                ? `<img src="${ex.image_url}" alt="${ex.name}" class="float-right ml-3 h-12 w-12 rounded-lg object-cover ring-1 ring-slate-200">`
+                : '';
+            li.innerHTML = `${thumb}<strong>${ex.name}</strong> - <small>${ex.category}</small>`;
             list.appendChild(li);
         });
     } catch (error) {
@@ -82,6 +91,10 @@ function logout() {
     document.getElementById('dashboard-section').classList.add('hidden');
     document.getElementById('exercise-list').innerHTML = '';
     document.getElementById('error-msg').innerText = '';
+
+    // [TAMBAHAN FITUR ADMIN] Sembunyikan panel admin saat logout.
+    // Fungsi resetAdminUI didefinisikan di admin.js (file terpisah, additive).
+    if (typeof resetAdminUI === 'function') resetAdminUI();
 }
 
 // --- UTILITAS UI ---

@@ -13,5 +13,14 @@ class Exercise extends Model
         'name',
         'category',
         'description',
+        'image',
     ];
+
+    // Selalu sertakan URL gambar penuh di setiap response JSON
+    protected $appends = ['image_url'];
+
+    public function getImageUrlAttribute()
+    {
+        return $this->image ? asset('storage/' . $this->image) : null;
+    }
 }
