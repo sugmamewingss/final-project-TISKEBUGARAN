@@ -28,5 +28,10 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('password123'),
             'role' => 'member',
         ]);
+
+        // 3. Memanggil seeder gerakan olahraga
+        $this->call([
+            GymExerciseSeeder::class,
+        ]);
     }
 }
